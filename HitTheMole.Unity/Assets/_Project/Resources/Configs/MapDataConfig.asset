@@ -13,9 +13,21 @@ MonoBehaviour:
   m_Name: MapDataConfig
   m_EditorClassIdentifier: _Project.Runtime::_Project.Develop.Runtime.MapDataConfig
   _holeField: {fileID: 8292164424316036230, guid: ca7264bcdaa66427591cb37264a5091d, type: 3}
-  _molePrefab: {fileID: 7908180922174578141, guid: 91221120b1c3244ed815fe04000405ef, type: 3}
-  _popUpDuration: 1.5
-  _popUpInterval: 1
-  _health: 10
-  _countPointsRequiredToWin: 10
-  _goldPerClick: 1
+  _molePrefab: {fileID: 2814470018503836491, guid: 91221120b1c3244ed815fe04000405ef, type: 3}
+  _startingGold: 100
+  _levels:
+  - _countPointsRequiredToWin: 10
+    _health: 10
+    _popUpInterval: 1
+    _popUpDuration: 1.5
+    _goldPerClick: 1
+  - _countPointsRequiredToWin: 12
+    _health: 8
+    _popUpInterval: 0.75
+    _popUpDuration: 1.25
+    _goldPerClick: 2
+  - _countPointsRequiredToWin: 15
+    _health: 6
+    _popUpInterval: 0.5
+    _popUpDuration: 1
+    _goldPerClick: 3

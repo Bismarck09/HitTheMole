@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 namespace _Project.Develop.Runtime
@@ -7,19 +7,15 @@ namespace _Project.Develop.Runtime
     public class MapDataConfig : ScriptableObject
     {
         [SerializeField] private HoleField _holeField;
-        [SerializeField] private GameObject _molePrefab;
-        [SerializeField] private float _popUpDuration;
-        [SerializeField] private float _popUpInterval;
-        [SerializeField] private int _health;
-        [SerializeField] private int _countPointsRequiredToWin;
-        [SerializeField] private int _goldPerClick;
-        
+        [SerializeField] private MoleData _molePrefab;
+        [SerializeField, Min(0)] private int _startingGold;
+        [SerializeField] private LevelConditions[] _levels = Array.Empty<LevelConditions>();
+
         public HoleField Field => _holeField;
-        public GameObject MolePrefab => _molePrefab;
-        public float PopUpDuration => _popUpDuration;
-        public float PopUpInterval => _popUpInterval;
-        public int Health => _health;
-        public int CountPointsRequiredToWin => _countPointsRequiredToWin;
-        public int GoldPerClick => _goldPerClick;
+        public MoleData MolePrefab => _molePrefab;
+        public int StartingGold => _startingGold;
+        public int LevelCount => Mathf.Min(_levels.Length, InputService.NumberKeyCount);
+
+        internal LevelConditions GetLevel(int level) => _levels[level - 1];
     }
 }

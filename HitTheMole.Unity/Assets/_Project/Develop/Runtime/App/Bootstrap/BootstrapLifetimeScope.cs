@@ -7,7 +7,7 @@ namespace _Project.Develop.Runtime.App.Bootstrap
     {
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterEntryPoint<AppBootstrap>();
+            builder.RegisterEntryPoint<AppBootstrap>(Lifetime.Scoped);
         }
     }
 }

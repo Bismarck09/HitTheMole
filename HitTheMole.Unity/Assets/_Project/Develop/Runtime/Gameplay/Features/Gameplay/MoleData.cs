@@ -2,13 +2,14 @@ using UnityEngine;
 
 public class MoleData : MonoBehaviour
 {
-    private bool _isActive;
-    
-    public bool IsActive => _isActive;
-    
-    public void ChangeState(bool isActive)
+    public bool IsActive => gameObject.activeSelf;
+    internal float HideAt { get; private set; }
+
+    internal void Show(float hideAt)
     {
-        _isActive = isActive;
-        gameObject.SetActive(_isActive);
+        HideAt = hideAt;
+        gameObject.SetActive(true);
     }
+
+    internal void Hide() => gameObject.SetActive(false);
 }

@@ -1,64 +1,73 @@
-using System;using _Project.Develop.Runtime;
-using _Project.Develop.Runtime.Infrastructure.ConfigsService;
-using UnityEngine;
-using VContainer.Unity;
+using System;
 
-public class LevelData : IInitializable, IDisposable
+internal sealed class LevelData : IDisposable
 {
-    private ConfigsProviderService _configsProvider;
-    private MapDataConfig _mapDataConfig;
-    private MoleGameService _moleGameService;
-    
-    private int _accumulatedGold;
-    private int _countPointsRequiredToWin;
-    private int _currentCountPoints;
-    private int _health;
-    private int _goldPerClick;
-    
-    public bool IsLossed { get; private set; }
-    public bool IsWinned { get; private set; }
+    private readonly MoleGameService _moleGameService;
 
-    public LevelData(ConfigsProviderService configsProvider, MoleGameService moleGameService)
+    private LevelConditions _conditions;
+    private int _points;
+
+    public int AccumulatedGold { get; private set; }
+    public int Health { get; private set; }
+    public bool IsFinished { get; private set; }
+    public bool IsWon { get; private set; }
+
+    public event Action OnFinished;
+
+    public LevelData(MoleGameService moleGameService)
     {
-        _configsProvider = configsProvider;
         _moleGameService = moleGameService;
     }
-        
-    public void Initialize()
+
+    public void Initialize(LevelConditions conditions)
     {
-        _mapDataConfig = _configsProvider.GetConfig<MapDataConfig>();
-        
-        _goldPerClick = _mapDataConfig.GoldPerClick;
-        _countPointsRequiredToWin = _mapDataConfig.CountPointsRequiredToWin;
-        _health = _mapDataConfig.Health;
-        
+        _conditions = conditions;
+        Health = conditions.Health;
+
         _moleGameService.OnMoleHitted += HitMole;
         _moleGameService.OnMoleMissed += MissMole;
-    }
-
-    private void HitMole()
-    {
-        _accumulatedGold += _goldPerClick;
-        _currentCountPoints += 1;
-        
-        if (_countPointsRequiredToWin <= _currentCountPoints)
-            IsWinned = true;
-    }
-
-    private void MissMole()
-    {
-        _health -= 1;
-        
-        if (_health <= 0)
-        {
-            _accumulatedGold = 0;
-            IsLossed = true;
-        }
     }
 
     public void Dispose()
     {
         _moleGameService.OnMoleHitted -= HitMole;
         _moleGameService.OnMoleMissed -= MissMole;
+    }
+
+    private void HitMole()
+    {
+        _points++;
+        AccumulatedGold += _conditions.GoldPerClick;
+
+        DebugProgress();
+
+        if (_points >= _conditions.CountPointsRequiredToWin)
+            Finish(true);
+    }
+
+    private void MissMole()
+    {
+        Health--;
+
+        DebugProgress();
+
+        if (Health == 0)
+        {
+            AccumulatedGold = 0;
+            Finish(false);
+        }
+    }
+
+    private void Finish(bool isWon)
+    {
+        IsWon = isWon;
+        IsFinished = true;
+
+        OnFinished?.Invoke();
+    }
+
+    private void DebugProgress()
+    {
+        UnityEngine.Debug.Log($"Попадания: {_points}/{_conditions.CountPointsRequiredToWin}, жизни: {Health}, золото за забег: {AccumulatedGold}");
     }
 }

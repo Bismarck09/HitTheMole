@@ -9,12 +9,12 @@ namespace _Project.Develop.Runtime.App.Gameplay
         {
             builder.Register<GameFieldFactory>(Lifetime.Scoped);
             builder.Register<MoleHoleRepository>(Lifetime.Scoped);
-            builder.Register<InputService>(Lifetime.Scoped);
-            
-            builder.RegisterEntryPoint<GameplayBootstrap>();
-            builder.RegisterEntryPoint<GameplayDebugInput>();
-            builder.RegisterEntryPoint<GameFieldInitializer>();
-            builder.RegisterEntryPoint<MoleGameService>();
+            builder.Register<GameFieldInitializer>(Lifetime.Scoped);
+            builder.Register<LevelData>(Lifetime.Scoped);
+
+            builder.RegisterEntryPoint<GameplayBootstrap>(Lifetime.Scoped);
+            builder.RegisterEntryPoint<GameplaySessionController>(Lifetime.Scoped).AsSelf();
+            builder.RegisterEntryPoint<MoleGameService>(Lifetime.Scoped).AsSelf();
         }
     }
 }

@@ -1,22 +1,12 @@
 using System.Collections.Generic;
-using UnityEngine;
 
-public class MoleHoleRepository
+internal sealed class MoleHoleRepository
 {
-    private Dictionary<string, MoleData> _moleHoleData = new();
+    private readonly List<MoleData> _moles = new();
 
-    public Dictionary<string, MoleData> MoleHoleData => _moleHoleData;
+    public int Count => _moles.Count;
 
-    public void Add(string holeID, MoleData moleData)
-    {
-        _moleHoleData.Add(holeID, moleData);
-    }
+    public void Add(MoleData mole) => _moles.Add(mole);
 
-    public MoleData GetMole(string holeID)
-    {
-        if (_moleHoleData.TryGetValue(holeID, out MoleData mole))
-            return mole;
-
-        return null;
-    }
+    public MoleData GetMole(int index) => _moles[index];
 }

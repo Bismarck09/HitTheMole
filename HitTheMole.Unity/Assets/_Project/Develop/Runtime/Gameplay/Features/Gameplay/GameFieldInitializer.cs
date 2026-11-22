@@ -1,32 +1,30 @@
 using _Project.Develop.Runtime;
 using _Project.Develop.Runtime.Infrastructure.ConfigsService;
 using UnityEngine;
-using VContainer.Unity;
 
-public class GameFieldInitializer : IStartable
+internal sealed class GameFieldInitializer
 {
-    private GameFieldFactory _gameFieldFactory;
-    private MapDataConfig _mapDataConfig;
-    private MoleHoleRepository  _repository;
+    private readonly GameFieldFactory _gameFieldFactory;
+    private readonly MapDataConfig _mapDataConfig;
+    private readonly MoleHoleRepository _repository;
 
-    public GameFieldInitializer(GameFieldFactory gameFieldFactory, ConfigsProviderService configsProviderService, MoleHoleRepository repository)
+    public GameFieldInitializer(GameFieldFactory gameFieldFactory, ConfigsProviderService configsProviderService,
+        MoleHoleRepository repository)
     {
         _gameFieldFactory = gameFieldFactory;
         _mapDataConfig = configsProviderService.GetConfig<MapDataConfig>();
         _repository = repository;
     }
 
-    public void Start()
+    public void Initialize()
     {
-        GameObject map = Object.Instantiate(_mapDataConfig.Field.gameObject, Vector3.zero, Quaternion.identity);
-        
-        foreach (Transform hole in _mapDataConfig.Field.Holes)
+        HoleField field = _gameFieldFactory.Create(_mapDataConfig.Field, Vector3.zero, Quaternion.identity);
+
+        foreach (Transform hole in field.Holes)
         {
-            GameObject mole = Object.Instantiate(_mapDataConfig.MolePrefab, hole.position, hole.rotation);
-            mole.gameObject.SetActive(false);
-            
-            if (mole.TryGetComponent(out MoleData moleData))
-                _repository.Add(hole.name, moleData);
+            MoleData mole = _gameFieldFactory.Create(_mapDataConfig.MolePrefab, hole.position, hole.rotation);
+            mole.Hide();
+            _repository.Add(mole);
         }
     }
 }

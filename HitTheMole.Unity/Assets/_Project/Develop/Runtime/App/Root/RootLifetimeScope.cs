@@ -20,6 +20,7 @@ namespace _Project.Develop.Runtime.App.Root
             InstallNavigation(builder);
             InstallConfigs(builder);
             InstallMeta(builder);
+            builder.Register<InputService>(Lifetime.Singleton);
             InstallApplicationStatus(builder);
         }
 

@@ -10,6 +10,8 @@ namespace _Project.Develop.Runtime.App.Navigation
 
         private GameNavigationConfig _config;
 
+        public int GameplayLevel { get; private set; }
+
         public GameNavigation(ISceneLoader sceneLoader, ConfigsProviderService configsProviderService)
         {
             _sceneLoader = sceneLoader;
@@ -29,6 +31,10 @@ namespace _Project.Develop.Runtime.App.Navigation
 
         public void OpenMainMenu() => _sceneLoader.Load(Config.MainMenuSceneKey);
 
-        public void OpenGameplay() => _sceneLoader.Load(Config.GameplaySceneKey);
+        public void OpenGameplay(int level)
+        {
+            GameplayLevel = level;
+            _sceneLoader.Load(Config.GameplaySceneKey);
+        }
     }
 }

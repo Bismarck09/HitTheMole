@@ -7,8 +7,8 @@ namespace _Project.Develop.Runtime.App.MainMenu
     {
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterEntryPoint<MainMenuBootstrap>();
-            builder.RegisterEntryPoint<MainMenuDebugInput>();
+            builder.RegisterEntryPoint<MainMenuBootstrap>(Lifetime.Scoped);
+            builder.RegisterEntryPoint<MainMenuInput>(Lifetime.Scoped);
         }
     }
 }

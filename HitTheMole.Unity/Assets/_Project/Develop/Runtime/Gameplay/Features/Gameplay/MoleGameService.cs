@@ -1,121 +1,89 @@
 using System;
-using _Project.Develop.Runtime;
-using _Project.Develop.Runtime.Infrastructure.ConfigsService;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using VContainer.Unity;
 using Random = UnityEngine.Random;
 
-public class MoleGameService : IStartable, ITickable
+internal sealed class MoleGameService : ITickable
 {
-    private MoleHoleRepository _repository;
-    private ConfigsProviderService  _configsProvider;
-    private MapDataConfig _mapDataConfig;
-    private MoleData _moleData;
-    private InputService _inputService;
-    
-    private bool _isHavePopUpMole;
-    private float _popUpDuration;
-    private float _popUpInterval;
+    private readonly MoleHoleRepository _repository;
+    private readonly InputService _inputService;
+    private readonly List<MoleData> _freeMoles = new();
 
-    private float _elapsedTime;
+    private LevelConditions _conditions;
+    private bool _isRunning;
+    private float _nextPopUp;
 
     public event Action OnMoleHitted;
     public event Action OnMoleMissed;
 
-    public MoleGameService(ConfigsProviderService configsProvider, MoleHoleRepository moleHoleRepository, InputService inputService)
+    public MoleGameService(MoleHoleRepository repository, InputService inputService)
     {
-        _configsProvider = configsProvider;
-        _repository = moleHoleRepository;
+        _repository = repository;
         _inputService = inputService;
     }
 
-    public void Start()
+    public void Start(LevelConditions conditions)
     {
-        _mapDataConfig = _configsProvider.GetConfig<MapDataConfig>();
-        _popUpDuration = _mapDataConfig.PopUpDuration;
-        _popUpInterval = _mapDataConfig.PopUpInterval;
+        _conditions = conditions;
+        _nextPopUp = Time.time + conditions.PopUpInterval;
+        _isRunning = true;
+    }
+
+    public void Stop()
+    {
+        _isRunning = false;
+
+        for (int i = 0; i < _repository.Count; i++)
+            _repository.GetMole(i).Hide();
     }
 
     public void Tick()
     {
-        if (_isHavePopUpMole)
-            LowerMole();
-        else
-            LiftMole();
-        
-        HandleInput();
-    }
+        if (_isRunning == false)
+            return;
 
-    private void LiftMole()
-    {
-        _elapsedTime += Time.deltaTime;
+        float time = Time.time;
 
-        if (_elapsedTime >= _popUpInterval)
+        for (int i = 0; i < _repository.Count && _isRunning; i++)
         {
-            int index = Random.Range(0, _repository.MoleHoleData.Count);
+            MoleData mole = _repository.GetMole(i);
 
-            if (TryGetMole(index, out MoleData mole))
-                _moleData = mole;
-            else
-                return;
-                
-            ChangeHoleState(true);
-        }
-    }
+            if (mole.IsActive == false)
+                continue;
 
-    private void LowerMole()
-    {
-        _elapsedTime += Time.deltaTime;
-
-        if (_elapsedTime >= _popUpDuration)
-        {
-            ChangeHoleState(false);
-            
-            OnMoleMissed?.Invoke();
-        }
-    }
-
-    private void ChangeHoleState(bool state)
-    {
-        _moleData.ChangeState(state);
-        _isHavePopUpMole = state;
-        _elapsedTime = 0f;
-    }
-
-    private void HandleInput()
-    {
-        for (int i = 0; i < _inputService.NumberKeys.Length; i++)
-        {
-            if (Keyboard.current[_inputService.NumberKeys[i]].wasPressedThisFrame)
-                TryHit(i);
-        }
-    }
-
-    private void TryHit(int index)
-    {
-        if (TryGetMole(index, out MoleData mole))
-        {
-            if (mole.IsActive)
+            if (time >= mole.HideAt)
             {
-                ChangeHoleState(false);
-                
+                mole.Hide();
+                OnMoleMissed?.Invoke();
+            }
+            else if (_inputService.IsNumberPressed(i + 1))
+            {
+                mole.Hide();
                 OnMoleHitted?.Invoke();
             }
         }
-            
+
+        if (_isRunning && time >= _nextPopUp)
+        {
+            _nextPopUp = time + _conditions.PopUpInterval;
+            LiftMole(time);
+        }
     }
 
-    private bool TryGetMole(int index,  out MoleData mole)
-    { 
-        mole = _repository.GetMole(_mapDataConfig.Field.Holes[index].name);
-        
-        if (mole == null)
+    private void LiftMole(float time)
+    {
+        _freeMoles.Clear();
+
+        for (int i = 0; i < _repository.Count; i++)
         {
-            Debug.LogError($"Mole  not found");
-            return false;
+            MoleData mole = _repository.GetMole(i);
+
+            if (mole.IsActive == false)
+                _freeMoles.Add(mole);
         }
 
-        return true;
+        if (_freeMoles.Count > 0)
+            _freeMoles[Random.Range(0, _freeMoles.Count)].Show(time + _conditions.PopUpDuration);
     }
 }
