@@ -56,6 +56,7 @@ namespace _Project.Develop.Runtime.App.Root
                 .WithParameter<IReadOnlyDictionary<Type, string>>(new Dictionary<Type, string>
                 {
                     [typeof(GameNavigationConfig)] = "Configs/GameNavigationConfig",
+                    [typeof(MapDataConfig)] = "Configs/MapDataConfig",
                 });
         }
     }
